@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HomeEase - Share Location</title>
+
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    >
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 700px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #f5f7fb;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 14px;
+            box-shadow: 0 4px 15px #00000012;
+        }
+
+        input, button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 12px;
+            box-sizing: border-box;
+            border-radius: 8px;
+        }
+
+        input {
+            border: 1px solid #ccc;
+        }
+
+        button {
+            border: none;
+            background: #176b50;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:disabled {
+            background: #999;
+            cursor: not-allowed;
+        }
+
+        #stopButton {
+            background: #b42318;
+        }
+
+        #map {
+            height: 300px;
+            margin-top: 20px;
+            border-radius: 10px;
+        }
+
+        #message {
+            margin-top: 15px;
+            overflow-wrap: anywhere;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="card">
+        <h1>📍 HomeEase</h1>
+        <h2>Share Your Location</h2>
+
+        <p>
+            Enter the booking ID and start sharing your location
+            with the customer for that booking.
+        </p>
+
+        <label for="bookingId">Booking ID</label>
+        <input
+            type="number"
+            id="bookingId"
+            min="1"
+            placeholder="Enter booking ID"
+        >
+
+        <button id="startButton" onclick="startSharing()">
+            Start Sharing Location
+        </button>
+
+        <button id="stopButton" onclick="stopSharing()" disabled>
+            Stop Sharing Location
+        </button>
+
+        <p id="message">Location sharing is currently off.</p>
+
+        <div id="map"></div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+        const map = L.map('map').setView([11.0168, 76.9558], 12);
+
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        let marker = null;
+        let watchId = null;
+
+        function startSharing() {
+            const bookingId = document.getElementById('bookingId').value;
+            const message = document.getElementById('message');
+
+            if (!bookingId || Number(bookingId) < 1) {
+                message.textContent = 'Please enter a valid booking ID.';
+                return;
+            }
+
+            if (!navigator.geolocation) {
+                message.textContent = 'Your browser does not support geolocation.';
+                return;
+            }
+
+            if (location.protocol !== 'https:' &&
+                location.hostname !== 'localhost' &&
+                location.hostname !== '127.0.0.1') {
+                message.textContent =
+                    'Location sharing requires HTTPS or localhost.';
+                return;
+            }
+
+            message.textContent = 'Requesting location permission...';
+
+            watchId = navigator.geolocation.watchPosition(
+                async function (position) {
+                    const latitude = position.coords.latitude;
+                    const longitude = position.coords.longitude;
+
+                    if (!marker) {
+                        marker = L.marker([latitude, longitude]).addTo(map);
+                    } else {
+                        marker.setLatLng([latitude, longitude]);
+                    }
+
+                    marker.bindPopup('Your current location');
+
+                    map.setView([latitude, longitude], 16);
+
+                    message.textContent =
+    'GPS location detected. Saving location...';
+
+try {
+    const response = await fetch('/update-provider-location', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            booking_id: document.getElementById('bookingId').value,
+            latitude: latitude,
+            longitude: longitude
+        })
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+        message.textContent =
+            result.error || 'Could not share your location.';
+        stopSharing();
+        return;
+    }
+
+    message.textContent =
+        '✅ Your live location is being shared with the customer.';
+
+} catch (error) {
+    message.textContent =
+        'Unable to send location to the server. Please try again.';
+    console.error(error);
+}
+                },
+
+                function (error) {
+                    message.textContent =
+                        'Unable to get location. Please allow location ' +
+                        'permission and check your device settings.';
+
+                    console.error(error);
+                    stopSharing();
+                },
+
+                {
+                    enableHighAccuracy: true,
+                    maximumAge: 5000,
+                    timeout: 15000
+                }
+            );
+
+            document.getElementById('startButton').disabled = true;
+            document.getElementById('stopButton').disabled = false;
+        }
+
+        function stopSharing() {
+            if (watchId !== null) {
+                navigator.geolocation.clearWatch(watchId);
+                watchId = null;
+            }
+
+            document.getElementById('startButton').disabled = false;
+            document.getElementById('stopButton').disabled = true;
+
+            document.getElementById('message').textContent =
+                'Location sharing stopped on this device.';
+        }
+    </script>
+</body>
+</html>

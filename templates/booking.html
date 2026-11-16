@@ -1,1 +1,398 @@
-{% extends 'base.html' %}{% block title %}Book a service{% endblock %}{% block content %}<section class="container page-wrap narrow"><span class="eyebrow">LET'S GET IT SORTED</span><h1 class="fw-bold mt-2">Tell us what's going on.</h1><p class="text-muted mb-4">We'll recommend a service and show you an approximate price.</p><div class="panel"><form method="post" id="booking-form"><label class="form-label">What do you need help with?</label><textarea class="form-control" name="description" id="description" rows="4" minlength="8" placeholder="For example: the kitchen tap is leaking under the sink…" required></textarea><div class="recommendation" id="recommendation">Describe the issue to get a service suggestion.</div><label class="form-label mt-3">Service category</label><select class="form-select" name="category" id="category"><option value="">Use recommendation</option>{% for item in categories %}<option>{{ item }}</option>{% endfor %}</select><div class="row g-3 mt-1"><div class="col-md-6"><label class="form-label">Preferred date</label><input class="form-control" type="date" name="service_date" min="{{ today }}" required></div><div class="col-md-6"><label class="form-label">Time window</label><select class="form-select" name="time_slot"><option>Morning</option><option>Afternoon</option><option>Evening</option></select></div></div><label class="estimate-box mt-4"><span>Approximate starting estimate<small>Final cost may vary after inspection.</small></span><strong id="estimate">₹—</strong></label><label class="urgent-toggle mt-3"><input type="checkbox" name="urgent"><span><b>It's urgent</b><small>Flag this request for priority review.</small></span></label><button class="btn btn-primary btn-lg w-100 mt-4">Find my home pro →</button></form></div></section>{% endblock %}{% block scripts %}<script>window.homeEaseServices={{ categories|tojson }};</script>{% endblock %}
+{% extends 'base.html' %}
+
+{% block title %}Book a service{% endblock %}
+
+{% block content %}
+<style>
+    body {
+        background: radial-gradient(
+            ellipse at center,
+            #f1fbf2 0%,
+            #d5f0cf 55%,
+            #2f8b4a 100%
+        ) !important;
+    }
+
+    .page-wrap,
+    .page-wrap.narrow {
+        max-width: 1100px !important;
+        width: 95%;
+        margin-left: auto;
+        margin-right: auto;
+    }
+</style>
+<section class="container page-wrap narrow">
+    <span class="eyebrow">LET'S GET IT SORTED</span>
+
+    <h1 class="fw-bold mt-2">Tell us what's going on.</h1>
+
+    <p class="text-muted mb-4">
+        Describe your problem. We'll recommend a service and a suitable home pro.
+    </p>
+
+    <div class="panel">
+        <form method="post" id="booking-form">
+
+            <label class="form-label" for="description">
+                What do you need help with?
+            </label>
+
+            <textarea
+                class="form-control"
+                name="description"
+                id="description"
+                rows="4"
+                minlength="8"
+                placeholder="For example: my kitchen pipe is leaking..."
+                required
+            ></textarea>
+
+            <div class="recommendation mt-3" id="recommendation" aria-live="polite">
+                Describe your problem to get a service recommendation.
+            </div>
+
+            <label class="form-label mt-3" for="category">
+                Service category
+            </label>
+
+            <select class="form-select" name="category" id="category" required>
+                <option value="">Choose a service</option>
+
+                {% for item in categories %}
+                <option value="{{ item }}">{{ item }}</option>
+                {% endfor %}
+            </select>
+
+            <!-- Recommended provider details -->
+           <!-- Recommended providers -->
+<div class="panel mt-3" id="provider-panel" hidden>
+    <h5 class="fw-bold">Choose your home pro</h5>
+
+    <p class="text-muted small">
+        Providers are ranked by rating and experience.
+        Select one provider to continue.
+    </p>
+
+    <div id="provider-list"></div>
+
+    <p class="text-muted small mb-0" id="provider-message"></p>
+</div>
+
+            <div class="row g-3 mt-1">
+                <div class="col-md-6">
+                    <label class="form-label" for="service-date">
+                        Preferred date
+                    </label>
+
+                    <input
+                        class="form-control"
+                        type="date"
+                        name="service_date"
+                        id="service-date"
+                        min="{{ today }}"
+                        required
+                    >
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label" for="time-slot">
+                        Time window
+                    </label>
+
+                    <select class="form-select" name="time_slot" id="time-slot">
+                        <option>Morning</option>
+                        <option>Afternoon</option>
+                        <option>Evening</option>
+                    </select>
+                </div>
+            </div>
+
+            <label class="estimate-box mt-4">
+                <span>
+                    Approximate starting estimate
+                    <small>Final cost may vary after inspection.</small>
+                </span>
+
+                <strong id="estimate">₹—</strong>
+            </label>
+
+            <p class="text-muted small mt-2" id="warranty-message">
+                Warranty, if available, depends on the repair and provider's terms.
+            </p>
+
+            <label class="urgent-toggle mt-3">
+                <input type="checkbox" name="urgent">
+
+                <span>
+                    <b>It's urgent</b>
+                    <small>Flag this request for priority review.</small>
+                </span>
+            </label>
+
+            <button
+                class="btn btn-primary btn-lg w-100 mt-4"
+                type="submit"
+                id="booking-button"
+            >
+                Find my home pro →
+            </button>
+
+        </form>
+    </div>
+</section>
+{% endblock %}
+
+
+{% block scripts %}
+<script>
+const descriptionInput = document.getElementById("description");
+const categorySelect = document.getElementById("category");
+const recommendationBox = document.getElementById("recommendation");
+const estimateBox = document.getElementById("estimate");
+
+const providerPanel = document.getElementById("provider-panel");
+const providerList = document.getElementById("provider-list");
+const providerMessage = document.getElementById("provider-message");
+const warrantyMessage = document.getElementById("warranty-message");
+
+const serviceDetails = {
+    "Plumbing": {
+        keywords: [
+            "leak", "leaking", "tap", "pipe", "drain",
+            "plumb", "water", "toilet", "faucet"
+        ],
+        price: 450
+    },
+
+    "Electrical": {
+        keywords: [
+            "electric", "wire", "wiring", "light",
+            "switch", "power", "fan", "socket"
+        ],
+        price: 500
+    },
+
+    "Cleaning": {
+        keywords: [
+            "clean", "cleaning", "dust", "dirty",
+            "deep clean", "wash"
+        ],
+        price: 350
+    },
+
+    "Carpentry": {
+        keywords: [
+            "wood", "door", "cabinet", "furniture",
+            "carpenter", "shelf"
+        ],
+        price: 550
+    },
+
+    "Appliance Repair": {
+        keywords: [
+            "fridge", "refrigerator", "washer",
+            "washing machine", "ac", "oven",
+            "appliance", "machine"
+        ],
+        price: 600
+    }
+};
+
+let recommendationTimer = null;
+let requestNumber = 0;
+
+function findService(text) {
+    let bestService = "";
+    let bestScore = 0;
+
+    for (const [service, details] of Object.entries(serviceDetails)) {
+        const score = details.keywords.filter(
+            keyword => text.includes(keyword)
+        ).length;
+
+        if (score > bestScore) {
+            bestScore = score;
+            bestService = service;
+        }
+    }
+
+    return bestService;
+}
+
+function clearProvider() {
+    providerPanel.hidden = true;
+    providerList.replaceChildren();
+    providerMessage.textContent = "";
+}
+
+async function loadRecommendedProvider(service, description, currentRequest) {
+    clearProvider();
+
+    providerPanel.hidden = false;
+    providerMessage.textContent = "Finding suitable providers...";
+
+    try {
+        const response = await fetch("/api/recommend-provider", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                category: service,
+                description: description
+            })
+        });
+
+        if (currentRequest !== requestNumber) return;
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error || "Could not load providers");
+        }
+
+        const providers = data.providers || [];
+
+        if (providers.length === 0) {
+            providerMessage.textContent =
+                "No matching active providers found.";
+            return;
+        }
+
+        providerList.replaceChildren();
+
+        providers.forEach((provider, index) => {
+            const label = document.createElement("label");
+            label.className = "d-block border rounded p-3 mb-2";
+
+            const radio = document.createElement("input");
+            radio.type = "radio";
+            radio.name = "provider_id";
+            radio.value = provider.id;
+            radio.required = true;
+            radio.className = "form-check-input me-2";
+
+            const title = document.createElement("strong");
+            title.textContent =
+                (index + 1) + ". " + provider.name;
+
+            const details = document.createElement("div");
+            details.className = "small text-muted mt-1";
+
+            const rating = provider.rating != null
+                ? Number(provider.rating).toFixed(1) + " / 5"
+                : "Not rated";
+
+            const experience = provider.experience_years != null
+                ? provider.experience_years + " years experience"
+                : "Experience not available";
+
+            details.textContent =
+                "Rating: " + rating + " | " + experience;
+
+            label.appendChild(radio);
+            label.appendChild(title);
+            label.appendChild(details);
+
+            providerList.appendChild(label);
+        });
+
+        providerMessage.textContent =
+            "Please select one provider before booking.";
+
+    } catch (error) {
+        if (currentRequest !== requestNumber) return;
+
+        providerMessage.textContent =
+            "Provider details could not be loaded. Please try again.";
+    }
+}
+function updateRecommendation() {
+    const description = descriptionInput.value.trim();
+    const text = description.toLowerCase();
+
+    requestNumber++;
+
+    const currentRequest = requestNumber;
+
+    clearProvider();
+
+    if (description.length < 8) {
+        recommendationBox.textContent =
+            "Describe your problem in at least 8 characters.";
+
+        estimateBox.textContent = "₹—";
+        warrantyMessage.textContent =
+            "Warranty, if available, depends on the repair and provider's terms.";
+
+        return;
+    }
+
+    const service = findService(text);
+
+    if (!service) {
+        recommendationBox.textContent =
+            "We couldn't identify the service automatically. Please select a category.";
+
+        estimateBox.textContent = "₹—";
+        return;
+    }
+
+    const details = serviceDetails[service];
+
+    recommendationBox.textContent =
+        "Recommended service: " + service;
+
+    estimateBox.textContent = "₹" + details.price;
+
+    warrantyMessage.textContent =
+        "Warranty, if available, depends on the repair and provider's terms.";
+
+    // Only automatically select the recommended service when
+    // the customer has not explicitly selected another category.
+    if (!categorySelect.dataset.userChanged) {
+        categorySelect.value = service;
+    }
+
+    loadRecommendedProvider(
+        service,
+        description,
+        currentRequest
+    );
+}
+
+descriptionInput.addEventListener("input", function () {
+    clearTimeout(recommendationTimer);
+
+    recommendationTimer = setTimeout(
+        updateRecommendation,
+        300
+    );
+});
+
+categorySelect.addEventListener("change", function () {
+    categorySelect.dataset.userChanged = "true";
+
+    const service = this.value;
+
+    if (!service || !serviceDetails[service]) {
+        estimateBox.textContent = "₹—";
+        clearProvider();
+        return;
+    }
+
+    estimateBox.textContent =
+        "₹" + serviceDetails[service].price;
+
+    if (descriptionInput.value.trim().length >= 8) {
+        requestNumber++;
+
+        loadRecommendedProvider(
+            service,
+            descriptionInput.value.trim(),
+            requestNumber
+        );
+    }
+});
+</script>
+{% endblock %}

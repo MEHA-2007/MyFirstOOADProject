@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>HomeEase Login</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+            position: relative;
+            overflow-x: hidden;
+background:
+    radial-gradient(
+        ellipse at 50% 50%,
+        rgba(255, 255, 255, 0.95) 0%,
+        rgba(255, 255, 255, 0.35) 12%,
+        transparent 32%
+    ),
+    repeating-linear-gradient(
+        125deg,
+        #2454ff 0%,
+        #477dff 7%,
+        #31d9ff 14%,
+        #54ffd2 21%,
+        #b5ff65 28%,
+        #fff16b 35%,
+        #ff9a76 42%,
+        #ff68c8 49%,
+        #a66bff 56%,
+        #2454ff 63%
+    );
+
+background-size: 100% 100%, 250% 250%;
+background-position: center, 0% 50%;
+animation: rainbowFlow 10s ease-in-out infinite;
+        }
+
+        /* Flowing colour animation */
+       @keyframes rainbowFlow {
+    0% {
+        background-position: center, 0% 50%;
+    }
+
+    50% {
+        background-position: center, 100% 50%;
+    }
+
+    100% {
+        background-position: center, 0% 50%;
+    }
+}
+
+        /* Decorative glowing background */
+        body::before {
+            content: "";
+            position: fixed;
+            width: 420px;
+            height: 420px;
+            left: -120px;
+            bottom: -130px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.12);
+            filter: blur(25px);
+            pointer-events: none;
+        }
+
+        body::after {
+            content: "";
+            position: fixed;
+            width: 350px;
+            height: 350px;
+            right: -100px;
+            top: -100px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.15);
+            filter: blur(30px);
+            pointer-events: none;
+        }
+
+        /* Main layout */
+        .page-layout {
+            width: 100%;
+            max-width: 1100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 55px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Left side branding */
+        .brand-section {
+            flex: 1;
+            color: white;
+            text-align: center;
+            min-width: 0;
+        }
+
+        .brand-title {
+            font-size: 38px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+        }
+
+        .brand-subtitle {
+            font-size: 17px;
+            margin: 0;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        /* House illustration created with CSS */
+        .house-art {
+            width: 230px;
+            height: 220px;
+            position: relative;
+            margin: 35px auto 20px;
+            filter: drop-shadow(0 10px 20px rgba(20, 30, 100, 0.15));
+        }
+
+        /* House roof */
+        .roof {
+            position: absolute;
+            width: 145px;
+            height: 145px;
+            left: 42px;
+            top: 12px;
+            border-top: 8px solid white;
+            border-left: 8px solid white;
+            border-radius: 8px;
+            transform: rotate(45deg);
+        }
+
+        /* House walls */
+        .house-body {
+            position: absolute;
+            width: 160px;
+            height: 115px;
+            left: 35px;
+            top: 82px;
+            border: 6px solid white;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        /* House door */
+        .house-door {
+            position: absolute;
+            width: 38px;
+            height: 66px;
+            left: 55px;
+            bottom: 0;
+            border: 4px solid white;
+            border-bottom: 0;
+            border-radius: 6px 6px 0 0;
+        }
+
+        .door-knob {
+            position: absolute;
+            right: 5px;
+            top: 31px;
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: white;
+        }
+
+        /* House windows */
+        .house-window {
+            position: absolute;
+            width: 34px;
+            height: 34px;
+            right: 14px;
+            top: 20px;
+            border: 4px solid white;
+        }
+
+        .window-cross {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            width: 3px;
+            height: 100%;
+            background: white;
+            transform: translateX(-50%);
+        }
+
+        .window-cross::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 26px;
+            height: 3px;
+            background: white;
+            transform: translate(-50%, -50%);
+        }
+
+        /* Ground line */
+        .ground-line {
+            position: absolute;
+            width: 220px;
+            height: 4px;
+            bottom: 12px;
+            left: 5px;
+            background: rgba(255, 255, 255, 0.85);
+            border-radius: 10px;
+        }
+
+        /* Login card */
+        .login-card {
+            width: 100%;
+            max-width: 460px;
+            flex-shrink: 0;
+            background: white;
+            padding: 35px;
+            border-radius: 24px;
+            box-shadow: 0 15px 45px rgba(20, 30, 80, 0.18);
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        .logo h1 {
+            color: #2454c5;
+            margin: 0 0 8px;
+            font-size: 32px;
+        }
+
+        .logo p {
+            color: #718096;
+            margin: 0;
+        }
+
+        /* Role buttons */
+        .role-tabs {
+            display: flex;
+            gap: 3px;
+            background: #e8edf5;
+            padding: 5px;
+            border-radius: 16px;
+            margin-bottom: 25px;
+        }
+
+        .role-tabs button {
+            flex: 1;
+            min-width: 0;
+            padding: 13px 3px;
+            border: none;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 13px;
+            cursor: pointer;
+            color: #64748b;
+            background: transparent;
+            transition: background 0.25s ease, color 0.25s ease;
+        }
+
+        .role-tabs button.active {
+            background: linear-gradient(110deg, #2864eb, #14b8a6);
+            color: white;
+        }
+
+        .role-tabs button:focus-visible,
+        .login-button:focus-visible {
+            outline: 3px solid #7c3aed;
+            outline-offset: 3px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #334155;
+        }
+
+        input {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid #d5deea;
+            border-radius: 10px;
+            font-size: 16px;
+        }
+
+        input:focus {
+            outline: 2px solid #b7cdfd;
+            border-color: #2864eb;
+        }
+
+        .login-button {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            background: #2454c5;
+            color: white;
+            font-size: 17px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 8px;
+            transition: background 0.2s ease;
+        }
+
+        .login-button:hover {
+            background: #173f9c;
+        }
+
+        .message {
+            padding: 10px;
+            margin-bottom: 15px;
+            background: #fff4d6;
+            border-radius: 8px;
+            color: #795600;
+        }
+
+        .form-link {
+            text-align: right;
+            margin: 12px 0;
+        }
+
+        .form-link a,
+        .register-link a {
+            color: #2454c5;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .form-link a:hover,
+        .register-link a:hover {
+            text-decoration: underline;
+        }
+
+        .register-link {
+            text-align: center;
+            margin: 20px 0 0;
+            color: #64748b;
+        }
+
+        /* Mobile layout */
+        @media (max-width: 850px) {
+            body {
+                padding: 22px 15px;
+            }
+
+            .page-layout {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .brand-title {
+                font-size: 30px;
+            }
+
+            .brand-subtitle {
+                font-size: 15px;
+            }
+
+            .house-art {
+                transform: scale(0.72);
+                margin: -5px auto -20px;
+            }
+
+            .login-card {
+                max-width: 460px;
+                padding: 28px 22px;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .login-card {
+                padding: 25px 16px;
+            }
+
+            .role-tabs button {
+                font-size: 11px;
+                padding: 12px 2px;
+            }
+        }
+
+        /* Respect reduced-motion preferences */
+        @media (prefers-reduced-motion: reduce) {
+            body {
+                animation: none;
+                background-position: 50% 50%;
+            }
+
+            *,
+            *::before,
+            *::after {
+                scroll-behavior: auto !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="page-layout">
+
+    <!-- HomeEase branding and house outline -->
+    <section class="brand-section">
+        <div class="brand-title">🏠 HomeEase</div>
+        <p class="brand-subtitle">Your Home Services Partner</p>
+
+        <div class="house-art" aria-label="House outline" role="img">
+            <div class="roof"></div>
+
+            <div class="house-body">
+                <div class="house-door">
+                    <div class="door-knob"></div>
+                </div>
+
+                <div class="house-window">
+                    <div class="window-cross"></div>
+                </div>
+            </div>
+
+            <div class="ground-line"></div>
+        </div>
+
+        <p class="brand-subtitle">
+            Making home services easier.
+        </p>
+    </section>
+
+    <!-- Login form -->
+    <div class="login-card">
+
+        <div class="logo">
+            <h1>🏠 HomeEase</h1>
+            <p>Your Home Services Partner</p>
+        </div>
+
+        <div class="role-tabs">
+
+            <button type="button"
+                    id="customerTab"
+                    class="active"
+                    aria-pressed="true"
+                    onclick="selectRole('customer')">
+                👤 Customer
+            </button>
+
+            <button type="button"
+                    id="providerTab"
+                    aria-pressed="false"
+                    onclick="selectRole('provider')">
+                🛠️ Provider
+            </button>
+
+            <button type="button"
+                    id="adminTab"
+                    aria-pressed="false"
+                    onclick="selectRole('admin')">
+                🔐 Admin
+            </button>
+
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+                <div class="message">{{ message }}</div>
+            {% endfor %}
+        {% endwith %}
+
+        <form method="POST" action="{{ url_for('role_login') }}">
+
+            <input type="hidden"
+                   name="role"
+                   id="selectedRole"
+                   value="customer">
+
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email"
+                       id="email"
+                       name="email"
+                       placeholder="Enter your email"
+                       autocomplete="username"
+                       required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password"
+                       id="password"
+                       name="password"
+                       placeholder="Enter your password"
+                       autocomplete="current-password"
+                       required>
+            </div>
+
+            <button type="submit"
+                    class="login-button"
+                    id="loginButton">
+                Login as Customer
+            </button>
+
+            <p class="form-link">
+                <a href="{{ url_for('forgot_password') }}">
+                    Forgot Password?
+                </a>
+            </p>
+
+            <p class="register-link">
+                New user?
+                <a href="{{ url_for('register') }}">Register here</a>
+            </p>
+
+        </form>
+    </div>
+
+</div>
+
+<script>
+    function selectRole(role) {
+        const allowedRoles = ['customer', 'provider', 'admin'];
+
+        if (!allowedRoles.includes(role)) {
+            return;
+        }
+
+        document.getElementById('selectedRole').value = role;
+
+        const roles = ['customer', 'provider', 'admin'];
+
+        roles.forEach(function (item) {
+            const tab = document.getElementById(item + 'Tab');
+            const selected = item === role;
+
+            tab.classList.toggle('active', selected);
+            tab.setAttribute('aria-pressed', String(selected));
+        });
+
+        const button = document.getElementById('loginButton');
+
+        const labels = {
+            customer: 'Login as Customer',
+            provider: 'Login as Provider',
+            admin: 'Login as Admin'
+        };
+
+        button.textContent = labels[role];
+    }
+</script>
+
+</body>
+</html>
+

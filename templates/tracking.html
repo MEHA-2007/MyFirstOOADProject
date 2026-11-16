@@ -1,1 +1,252 @@
-{% extends 'base.html' %}{% block title %}Track booking{% endblock %}{% block content %}<section class="container page-wrap narrow"><span class="eyebrow">BOOKING #{{ booking.id }}</span><h1 class="fw-bold mt-2">Your service is in motion.</h1><p class="text-muted">{{ booking.service_name }} · {{ booking.service_date }} · {{ booking.time_slot }}</p><div class="panel mt-4"><span class="eyebrow">CURRENT STATUS</span><h2 class="mt-2"><span class="badge-status">{{ booking.status }}</span>{% if booking.urgent %} <span class="badge bg-warning text-dark">Urgent</span>{% endif %}</h2><div class="timeline mt-4">{% for status in statuses[:5] %}<div class="timeline-step {% if statuses.index(booking.status)>=loop.index0 %}done{% endif %}"><i></i><span>{{ status }}</span></div>{% endfor %}</div><div class="provider-box mt-4"><div class="avatar">{{ (booking.provider_name or 'H')[0] }}</div><div><b>{{ booking.provider_name or 'Finding a provider' }}</b><small>{% if booking.provider_name %}Matched local professional · ★ {{ booking.rating }}{% else %}We'll confirm a provider shortly.{% endif %}</small></div></div><div class="estimate-box mt-4"><span>Estimated cost<small>Approximate, subject to inspection.</small></span><strong>₹{{ booking.estimated_cost }}</strong></div><p class="small text-muted mt-3 mb-0">GPS location tracking will be integrated in a future version.</p><a class="btn btn-primary mt-3" href="{{ url_for('payment',booking_id=booking.id) }}">Demo payment →</a></div></section>{% endblock %}
+{% extends 'base.html' %}
+
+{% block title %}Track booking{% endblock %}
+
+{% block content %}
+<style>
+    body {
+        background: radial-gradient(
+            ellipse at center,
+            #f1fbf2 0%,
+            #d5f0cf 55%,
+            #2f8b4a 100%
+        ) !important;
+    }
+    .page-wrap.narrow {
+    max-width: 1100px !important;
+    width: 95%;
+}
+</style>
+
+<section class="container page-wrap narrow">
+
+    <span class="eyebrow">BOOKING #{{ booking.id }}</span>
+
+    <h1 class="fw-bold mt-2">Your service is in motion.</h1>
+
+    <p class="text-muted">
+        {{ booking.service_name }} ·
+        {{ booking.service_date }} ·
+        {{ booking.time_slot }}
+    </p>
+
+    <div class="panel mt-4">
+
+        <span class="eyebrow">CURRENT STATUS</span>
+
+        <h2 class="mt-2">
+            <span class="badge-status">{{ booking.status }}</span>
+
+            {% if booking.urgent %}
+                <span class="badge bg-warning text-dark">Urgent</span>
+            {% endif %}
+        </h2>
+
+        <!-- Booking status timeline -->
+        <div class="timeline mt-4">
+
+            {% for status in statuses[:5] %}
+
+                <div class="timeline-step
+                    {% if statuses.index(booking.status) >= loop.index0 %}
+                        done
+                    {% endif %}">
+
+                    <i></i>
+                    <span>{{ status }}</span>
+
+                </div>
+
+            {% endfor %}
+
+            {% if booking.status == 'Completed' %}
+                <a href="{{ url_for('review_booking', booking_id=booking.id) }}"
+                   class="btn btn-primary">
+                    Give Review
+                </a>
+            {% endif %}
+
+        </div>
+
+        <!-- Provider details -->
+        <div class="provider-box mt-4">
+
+            <div class="avatar">
+                {{ (booking.provider_name or 'H')[0] }}
+            </div>
+
+            <div>
+                <b>
+                    {{ booking.provider_name or 'Finding a provider' }}
+                </b>
+
+                <small>
+                    {% if booking.provider_name %}
+                        Matched local professional · ★ {{ booking.rating }}
+                    {% else %}
+                        We'll confirm a provider shortly.
+                    {% endif %}
+                </small>
+            </div>
+
+        </div>
+
+        <!-- Call Provider button -->
+        {% if booking.provider_phone %}
+
+            <a
+                class="btn btn-success mt-3 w-100"
+                href="tel:{{ booking.provider_phone }}"
+            >
+                📞 Call Provider
+            </a>
+
+        {% else %}
+
+            <p class="small text-muted mt-3">
+                Provider phone number is not available yet.
+            </p>
+
+        {% endif %}
+
+        <!-- Estimated cost -->
+        <div class="estimate-box mt-4">
+
+            <span>
+                Estimated cost
+                <small>Approximate, subject to inspection.</small>
+            </span>
+
+            <strong>₹{{ booking.estimated_cost }}</strong>
+
+        </div>
+
+        <!-- Live GPS Tracking -->
+<div class="mt-4">
+    <h3 class="h5 fw-bold">📍 Live Provider Location</h3>
+
+    {% if booking.status in ['Confirmed', 'Provider on the Way', 'In Progress'] %}
+
+        <p class="text-muted small">
+            The provider's shared location will appear on the map below.
+        </p>
+
+        <div id="provider-map"
+             style="height: 350px; width: 100%; border-radius: 12px; border: 1px solid #ddd;">
+        </div>
+
+        <p id="location-status" class="small text-muted mt-2">
+            Waiting for provider location...
+        </p>
+
+    {% elif booking.status == 'Requested' %}
+
+        <p class="text-muted">
+            🔒 GPS tracking will be available after the provider accepts your request.
+        </p>
+
+    {% elif booking.status == 'Completed' %}
+
+        <p class="text-muted">
+            ✅ This service has been completed.
+        </p>
+
+    {% else %}
+
+        <p class="text-muted">
+            GPS tracking is unavailable for this booking.
+        </p>
+
+    {% endif %}
+</div>
+
+        <!-- Demo payment -->
+        <a
+            class="btn btn-primary mt-3"
+            href="{{ url_for('payment', booking_id=booking.id) }}"
+        >
+            Demo payment →
+        </a>
+
+    </div>
+
+</section>
+{% if booking.status in ['Confirmed', 'Provider on the Way', 'In Progress'] %}
+
+<link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+/>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const mapElement = document.getElementById('provider-map');
+    const statusElement = document.getElementById('location-status');
+
+    if (!mapElement || !statusElement) return;
+
+    const map = L.map('provider-map').setView([11.0168, 76.9558], 12);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    let providerMarker = null;
+
+    async function updateProviderLocation() {
+        try {
+            const response = await fetch(
+                "{{ url_for('get_provider_location', booking_id=booking.id) }}",
+                { cache: 'no-store' }
+            );
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                statusElement.textContent =
+                    data.error || 'Waiting for provider GPS location...';
+                return;
+            }
+
+            const latitude = Number(data.latitude);
+            const longitude = Number(data.longitude);
+
+            if (!Number.isFinite(latitude) ||
+                !Number.isFinite(longitude)) {
+                statusElement.textContent = 'Invalid GPS coordinates received.';
+                return;
+            }
+
+            const position = [latitude, longitude];
+
+            if (!providerMarker) {
+                providerMarker = L.marker(position)
+                    .addTo(map)
+                    .bindPopup('Provider location');
+
+                map.setView(position, 16);
+            } else {
+                providerMarker.setLatLng(position);
+            }
+
+            statusElement.textContent =
+                '📍 Provider location updated: ' +
+                new Date(data.updated_at).toLocaleTimeString();
+
+        } catch (error) {
+            console.error('Location update failed:', error);
+            statusElement.textContent =
+                'Unable to load provider location. Retrying...';
+        }
+    }
+
+    updateProviderLocation();
+    setInterval(updateProviderLocation, 5000);
+});
+</script>
+
+{% endif %}
+
+{% endblock %}

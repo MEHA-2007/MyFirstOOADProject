@@ -1,1 +1,19 @@
-{% extends 'base.html' %}{% block title %}Our local pros{% endblock %}{% block content %}<section class="container page-wrap"><span class="eyebrow">GOOD PEOPLE, GOOD WORK</span><h1 class="fw-bold mt-2">Meet your local pros.</h1><p class="text-muted">A small sample directory for the HomeEase prototype.</p><div class="row g-3 mt-3">{% for p in providers %}<div class="col-md-6 col-lg-4"><div class="provider-card"><div class="avatar">{{ p.name[0] }}</div><h3>{{ p.name }}</h3><p>★ {{ p.rating }} · {{ p.experience_years }} years experience</p><span class="badge-status">{{ p.skills }}</span><small class="d-block mt-3 text-muted">{{ p.location }}</small></div></div>{% else %}<p>No providers yet. Load the sample rows in schema.sql.</p>{% endfor %}</div></section>{% endblock %}
+{% extends 'base.html' %}{% block title %}Our local pros{% endblock %}{% block content %}
+<style>
+    body {
+        background: radial-gradient(
+            ellipse at center,
+            #f1fbf2 0%,
+            #d5f0cf 55%,
+            #2f8b4a 100%
+        ) !important;
+    }
+
+    .page-wrap {
+        max-width: 1100px !important;
+        width: 95%;
+        margin-left: auto;
+        margin-right: auto;
+    }
+</style>
+<section class="container page-wrap"><span class="eyebrow">GOOD PEOPLE, GOOD WORK</span><h1 class="fw-bold mt-2">Meet your local pros.</h1><p class="text-muted">A small sample directory for the HomeEase prototype.</p><div class="row g-3 mt-3">{% for p in providers %}<div class="col-md-6 col-lg-4"><div class="provider-card"><div class="avatar">{{ p.name[0] }}</div><h3>{{ p.name }}</h3><p>★ {{ p.rating }} · {{ p.experience_years }} years experience</p><span class="badge-status">{{ p.skills }}</span><small class="d-block mt-3 text-muted">{{ p.location }}</small></div></div>{% else %}<p>No providers yet. Load the sample rows in schema.sql.</p>{% endfor %}</div></section>{% endblock %}

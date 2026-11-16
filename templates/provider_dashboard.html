@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HomeEase | Provider Dashboard</title>
+
+   <style>
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'Segoe UI', Arial, sans-serif;
+        margin: 0;
+        padding: 30px 20px;
+        background: radial-gradient(ellipse at center, #f1fbf2 0%, #d5f0cf 55%, #2f8b4a 100%);
+        color: #244735;
+        min-height: 100vh;
+    }
+
+    .dashboard {
+        max-width: 1150px;
+        margin: auto;
+    }
+
+    .top-header {
+        background: linear-gradient(135deg, #ffffff, #e5f6e9);
+        padding: 28px 32px;
+        border: 1px solid #cce8d3;
+        border-radius: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+        flex-wrap: wrap;
+        box-shadow: 0 8px 25px rgba(39, 100, 60, 0.08);
+        margin-bottom: 28px;
+    }
+
+    .brand {
+        font-size: 30px;
+        font-weight: 800;
+        color: #245b3b;
+        margin: 0 0 8px;
+    }
+
+    .brand span {
+        color: #39965b;
+    }
+
+    .welcome {
+        color: #64816d;
+        margin: 0;
+        font-size: 15px;
+        line-height: 1.7;
+    }
+
+    .logout-btn {
+        display: inline-block;
+        background: #ffffff;
+        color: #287044;
+        border: 1px solid #c4e2cc;
+        padding: 11px 20px;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: 650;
+        transition: 0.2s;
+    }
+
+    .logout-btn:hover {
+        background: #e0f4e5;
+        color: #1d5933;
+    }
+
+    .section-heading {
+        margin: 30px 0 20px;
+    }
+
+    .section-heading h2 {
+        color: #245b3b;
+        font-size: 25px;
+        margin: 0 0 7px;
+        font-weight: 750;
+    }
+
+    .section-heading p {
+        color: #64816d;
+        margin: 0;
+    }
+
+    .booking-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 22px;
+    }
+
+    .booking {
+        background: #ffffff;
+        padding: 25px;
+        border-radius: 17px;
+        border: 1px solid #d4ead9;
+        box-shadow: 0 6px 22px rgba(39, 100, 60, 0.07);
+        transition: transform 0.2s, box-shadow 0.2s;
+        min-width: 0;
+    }
+
+    .booking:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 28px rgba(39, 100, 60, 0.12);
+    }
+
+    .booking-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        padding-bottom: 17px;
+        margin-bottom: 18px;
+        border-bottom: 1px solid #e5f1e8;
+    }
+
+    .booking-header h3 {
+        color: #286443;
+        font-size: 19px;
+        margin: 0;
+        font-weight: 750;
+    }
+
+    .status {
+        display: inline-block;
+        padding: 7px 12px;
+        border-radius: 30px;
+        background: #e0f4e5;
+        color: #287044;
+        font-size: 12px;
+        font-weight: 750;
+    }
+
+    .booking-details p {
+        margin: 0 0 13px;
+        color: #64816d;
+        font-size: 14px;
+        line-height: 1.6;
+        overflow-wrap: anywhere;
+    }
+
+    .booking-details strong {
+        color: #315d40;
+    }
+
+    .booking-details .description {
+        background: #f0f9f2;
+        border: 1px solid #dcefe0;
+        border-radius: 10px;
+        padding: 12px;
+    }
+
+    .actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 18px;
+    }
+
+    .btn {
+        display: inline-block;
+        border: none;
+        border-radius: 9px;
+        padding: 11px 17px;
+        font-size: 14px;
+        font-weight: 700;
+        text-decoration: none;
+        text-align: center;
+        cursor: pointer;
+        transition: 0.2s;
+        font-family: inherit;
+    }
+
+    .btn-accept {
+        background: #348653;
+        color: white;
+    }
+
+    .btn-accept:hover {
+        background: #246b40;
+    }
+
+    .btn-reject {
+        background: #fff0ed;
+        color: #b5473b;
+        border: 1px solid #f1d2cc;
+    }
+
+    .btn-reject:hover {
+        background: #ffe1dc;
+    }
+
+    .btn-location {
+        width: 100%;
+        margin-top: 18px;
+        background: linear-gradient(135deg, #4ca96b, #287b48);
+        color: white;
+        padding: 13px 16px;
+        font-size: 15px;
+    }
+
+    .btn-location:hover {
+        background: linear-gradient(135deg, #358b53, #20643a);
+    }
+
+    .empty {
+        background: #ffffff;
+        padding: 45px 20px;
+        border-radius: 17px;
+        border: 1px dashed #b8d9c0;
+        text-align: center;
+        color: #64816d;
+    }
+
+    .empty-icon {
+        font-size: 42px;
+        margin-bottom: 12px;
+    }
+
+    .empty h3 {
+        color: #286443;
+        margin: 0 0 8px;
+    }
+
+    .empty p {
+        margin: 0;
+        line-height: 1.6;
+    }
+
+    @media (max-width: 760px) {
+        body {
+            padding: 16px 12px;
+        }
+
+        .top-header {
+            padding: 23px 20px;
+        }
+
+        .brand {
+            font-size: 26px;
+        }
+
+        .booking-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .booking {
+            padding: 20px;
+        }
+    }
+</style>
+</head>
+
+<body>
+
+<div class="dashboard">
+
+    <!-- Dashboard Header -->
+    <header class="top-header">
+        <div>
+            <h1 class="brand">Home<span>Ease</span></h1>
+            <p class="welcome">
+                Welcome back, {{ user.name }}! 👋<br>
+                Manage your home service bookings here.
+            </p>
+        </div>
+
+        <a href="{{ url_for('logout') }}" class="logout-btn">
+            Logout ↗
+        </a>
+    </header>
+
+    <!-- Bookings Section -->
+    <div class="section-heading">
+        <h2>📋 My Bookings</h2>
+        <p>View customer requests and manage your assigned services.</p>
+    </div>
+
+    {% if bookings %}
+
+        <div class="booking-grid">
+
+            {% for booking in bookings %}
+
+                <article class="booking">
+
+                    <div class="booking-header">
+                        <h3>Booking #{{ booking.id }}</h3>
+
+                        <span class="status">
+                            {{ booking.status }}
+                        </span>
+                    </div>
+
+                    <div class="booking-details">
+
+                        <p>
+                            <strong>🛠️ Service:</strong><br>
+                            {{ booking.service_name }}
+                        </p>
+
+                        <p>
+                            <strong>👤 Customer:</strong><br>
+                            {{ booking.customer_name }}
+                        </p>
+
+                        <p>
+                            <strong>📞 Customer Phone:</strong><br>
+                            {{ booking.customer_phone or 'Not provided' }}
+                        </p>
+
+                        <p class="description">
+                            <strong>📝 Description:</strong><br>
+                            {{ booking.description or 'No description provided' }}
+                        </p>
+
+                        <p>
+                            <strong>📅 Date:</strong><br>
+                            {{ booking.service_date }}
+                        </p>
+
+                        <p>
+                            <strong>🕒 Time:</strong><br>
+                            {{ booking.time_slot }}
+                        </p>
+
+                        <p>
+                            <strong>💰 Estimated Cost:</strong><br>
+                            ₹{{ booking.estimated_cost }}
+                        </p>
+
+                    </div>
+
+                    <!-- Accept / Reject -->
+                    {% if booking.status == 'Requested' %}
+
+                        <div class="actions">
+
+                            <form method="POST"
+                                  action="{{ url_for(
+                                      'provider_booking_action',
+                                      booking_id=booking.id,
+                                      action='accept'
+                                  ) }}">
+
+                                <button type="submit"
+                                        class="btn btn-accept">
+                                    ✓ Accept Booking
+                                </button>
+
+                            </form>
+
+                            <form method="POST"
+                                  action="{{ url_for(
+                                      'provider_booking_action',
+                                      booking_id=booking.id,
+                                      action='reject'
+                                  ) }}">
+
+                                <button type="submit"
+                                        class="btn btn-reject">
+                                    ✕ Reject
+                                </button>
+
+                            </form>
+
+                        </div>
+
+                    {% endif %}
+
+                    <!-- Live Location -->
+                    {% if booking.status in [
+                        'Confirmed',
+                        'Provider on the Way',
+                        'In Progress'
+                    ] %}
+
+                        <a href="{{ url_for(
+                            'provider_location',
+                            booking_id=booking.id
+                        ) }}"
+                           class="btn btn-location">
+                            📍 Share Live Location
+                        </a>
+
+                    {% endif %}
+
+                </article>
+
+            {% endfor %}
+
+        </div>
+
+    {% else %}
+
+        <div class="empty">
+            <div class="empty-icon">📭</div>
+
+            <h3>No Bookings Yet</h3>
+
+            <p>
+                You currently have no bookings assigned to you.<br>
+                New bookings will appear here when available.
+            </p>
+        </div>
+
+    {% endif %}
+
+</div>
+
+</body>
+</html>

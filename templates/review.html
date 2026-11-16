@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+    <h2>Review Your Service</h2>
+
+    <form method="POST">
+
+        <div class="mb-3">
+            <label for="rating">Rating</label>
+
+            <select name="rating"
+                    id="rating"
+                    class="form-select"
+                    required>
+
+                <option value="">Select Rating</option>
+                <option value="5">5 - Excellent</option>
+                <option value="4">4 - Very Good</option>
+                <option value="3">3 - Good</option>
+                <option value="2">2 - Fair</option>
+                <option value="1">1 - Poor</option>
+
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label for="comment">Comments</label>
+
+            <textarea name="comment"
+                      id="comment"
+                      class="form-control"
+                      rows="4"
+                      placeholder="Write your experience"></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+            Submit Review
+        </button>
+
+    </form>
+
+</div>
+
+{% endblock %}

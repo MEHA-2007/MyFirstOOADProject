@@ -1,1 +1,135 @@
-{% extends 'base.html' %}{% block title %}Your dashboard{% endblock %}{% block content %}<section class="container page-wrap"><div class="d-flex justify-content-between align-items-end flex-wrap gap-3 mb-4"><div><span class="eyebrow">YOUR HOME BASE</span><h1 class="fw-bold mt-2">Hello, {{ user.name.split(' ')[0] }}.</h1><p class="text-muted mb-0">A little home care goes a long way.</p></div><a class="btn btn-primary" href="{{ url_for('book') }}">＋ Book a service</a></div><div class="row g-3 mb-4"><div class="col-md-4"><div class="stat-card"><small>ALL BOOKINGS</small><strong>{{ total }}</strong></div></div><div class="col-md-4"><div class="stat-card"><small>ACTIVE REQUESTS</small><strong>{{ bookings|selectattr('status','ne','Completed')|selectattr('status','ne','Cancelled')|list|length }}</strong></div></div><div class="col-md-4"><div class="stat-card"><small>HOME CARE TIP</small><strong class="tip">Check recurring issues early.</strong></div></div></div><div class="panel"><div class="panel-head"><h2>Recent bookings</h2><a href="{{ url_for('history') }}">View history →</a></div>{% if bookings %}<div class="table-responsive"><table class="table align-middle"><thead><tr><th>Service</th><th>Date</th><th>Provider</th><th>Status</th><th></th></tr></thead><tbody>{% for b in bookings %}<tr><td>{{ service_icons.get(b.service_name,'🏠') }} {{ b.service_name }}</td><td>{{ b.service_date }}</td><td>{{ b.provider_name or 'Finding a match' }}</td><td><span class="badge-status">{{ b.status }}</span></td><td><a href="{{ url_for('tracking',booking_id=b.id) }}">Track</a></td></tr>{% endfor %}</tbody></table></div>{% else %}<div class="empty-state"><div>🏡</div><h3>Your home-care story starts here.</h3><p>Book a service and keep every visit in one place.</p><a href="{{ url_for('book') }}" class="btn btn-primary">Book your first service</a></div>{% endif %}</div></section>{% endblock %}
+{% extends 'base.html' %}
+{% block title %}Your dashboard{% endblock %}
+
+{% block content %}
+<style>
+    body {
+        background: radial-gradient(
+            ellipse at center,
+            #f1fbf2 0%,
+            #d5f0cf 55%,
+            #2f8b4a 100%
+        ) !important;
+    }
+</style>
+<section class="container page-wrap">
+
+    <!-- Dashboard Header -->
+    <div class="d-flex justify-content-between align-items-end flex-wrap gap-3 mb-4">
+        <div>
+            <span class="eyebrow">YOUR HOME BASE</span>
+            <h1 class="fw-bold mt-2">Hello, {{ user.name.split(' ')[0] }}.</h1>
+            <p class="text-muted mb-0">A little home care goes a long way.</p>
+        </div>
+        <a class="btn btn-primary" href="{{ url_for('book') }}">＋ Book a service</a>
+    </div>
+
+    <!-- Dashboard Statistics -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="stat-card">
+                <small>ALL BOOKINGS</small>
+                <strong>{{ total }}</strong>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="stat-card">
+                <small>ACTIVE REQUESTS</small>
+                <strong>{{ bookings|selectattr('status','ne','Completed')|selectattr('status','ne','Cancelled')|list|length }}</strong>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="stat-card">
+                <small>HOME CARE TIP</small>
+                <strong class="tip">Check recurring issues early.</strong>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notifications Section -->
+    <div class="panel mb-4">
+        <div class="panel-head">
+            <h2>🔔 Notifications</h2>
+        </div>
+
+        <div class="p-3">
+            {% if notifications %}
+                {% for notification in notifications %}
+                    <div class="alert alert-info mb-3" role="status">
+                        <div>{{ notification.message }}</div>
+                        <small class="text-muted">
+                            {{ notification.created_at }}
+                        </small>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-muted mb-0">No notifications yet.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Recent Bookings -->
+    <div class="panel">
+        <div class="panel-head">
+            <h2>Recent bookings</h2>
+            <a href="{{ url_for('history') }}">View history →</a>
+        </div>
+
+        {% if bookings %}
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Service</th>
+                            <th>Date</th>
+                            <th>Provider</th>
+                            <th>Status</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for b in bookings %}
+                            <tr>
+                                <td>
+                                    {{ service_icons.get(b.service_name, '🏠') }}
+                                    {{ b.service_name }}
+                                </td>
+                                <td>{{ b.service_date }}</td>
+                                <td>{{ b.provider_name or 'Finding a match' }}</td>
+                                <td>
+                                    <span class="badge-status">{{ b.status }}</span>
+                                </td>
+                                <td>
+                                    {% if b.status in ['Confirmed', 'Provider on the Way', 'In Progress', 'Completed'] %}
+                                        <a class="btn btn-success btn-sm"
+                                           href="{{ url_for('tracking', booking_id=b.id) }}">
+                                            Track Service
+                                        </a>
+                                    {% elif b.status == 'Requested' %}
+                                        <span class="text-muted">Waiting for acceptance</span>
+                                    {% else %}
+                                        <span class="text-muted">Unavailable</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <div>🏡</div>
+                <h3>Your home-care story starts here.</h3>
+                <p>Book a service and keep every visit in one place.</p>
+                <a href="{{ url_for('book') }}" class="btn btn-primary">
+                    Book your first service
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+</section>
+{% endblock %}
